@@ -1,0 +1,48 @@
+html{
+    height: 100%;
+    width: 100%;
+}
+body{
+    height: 100%;
+    width: 100%;
+}
+
+header{
+    background-color: #bb5544;
+    box-shadow: 0 5px 5px -5px #333;
+}
+header a{
+    color: white;
+    text-decoration: none;
+}
+header a:hover{
+    text-shadow: 1px 1px 2px black, 0 0 1em white;
+    color: white;
+}
+footer{
+    background-color: #333344;
+    color: white;
+    box-shadow: 0 -5px 5px -5px #333;
+}
+img{
+    width: 250px !important;
+    height: 150px !important;
+}
+
+.page-item.active .page-link {
+    background-color: #bb5544 !important;
+    border-color: #bb5544 !important;
+}
+.page-link:hover{
+    z-index: 1;
+    border-color: #bb5544 !important;
+    cursor: pointer;
+}
+
+#input-group{
+    margin-bottom: 20px;
+}
+.btn{
+    background-color: #bb5544;
+    color: white;
+}
