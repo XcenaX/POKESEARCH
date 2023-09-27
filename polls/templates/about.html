@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}    
+        <link rel="stylesheet" href="{% static 'polls/styles/main.css'%}">
+    <link rel="stylesheet" href="{% static 'polls/styles/bootstrap-datepicker.css'%}">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+{% endblock %}
+
+{% block input_block %}
+    <input type="text" name="title" class="form-control search" placeholder="Введите название" value="{{title}}">
+{% endblock %}
+
+{% block header_buttons %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:popular'%}">Популярное</a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="{% url 'polls:about'%}">О нас</a>
+    </li>    
+{% endblock %}
+
+
+{% block container %}
+    <div class="container">
+        <div class="row  mt-4">
+            <div class="col col-md-7">
+                <h1 class="text-center">Sober</h1>
+                <h4 class="mt-4 ">Молодые перспективные ребята примутся за любую вашу работу вне зависимости от сложности и масштабности разработки</h4>
+                <p class="mt-5">По всем вопросам обращаться по телефону: <a href="">8-800-555-35-35</a></p>
+                
+            </div>
+            <div class="col col-md-5">
+                    <ul class="list-group">
+                        <li class="list-group-item">Разработка сайта на bootstrap</li>
+                        <li class="list-group-item">Макет сайта</li>
+                        <li class="list-group-item">Дизайн</li>
+                        <li class="list-group-item">Адаптивная и отзывчивая верстка</li>
+                        <li class="list-group-item">Доработка функционала сайта</li>
+                        <li class="list-group-item">Разработка на PHP, Python, Node.js</li>
+                    </ul>  
+            </div>
+        </div>
+    </div>
+{% endblock %}

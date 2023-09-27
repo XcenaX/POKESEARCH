@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+        <link rel="stylesheet" href="{% static 'polls/styles/main.css'%}">
+    <link rel="stylesheet" href="{% static 'polls/styles/bootstrap-datepicker.css'%}">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'polls/styles/new.css'%}">
+{% endblock %}
+
+{% block header_buttons %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">Популярное</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">О нас</a>
+    </li>
+{% endblock %}
+
+
+{% block container %}
+    <div class="container">
+        <div class="row">
+                <div class="col col-lg-12">
+                        <img class="d-flex mr-3" src="{{current_new.img_url}}" alt="Generic placeholder image">
+                        <div class="media-body">
+                                <h5 class="mt-0 mb-1 font-weight-bold">{{current_new.title}}</h5>
+                                <span>{{current_new.pub_date}}</span>
+                                <p>{{current_new.content}}</p>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

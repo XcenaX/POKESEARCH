@@ -1,0 +1,18 @@
+img{
+    width: 70%;
+    height: auto;
+    margin: 1% auto;
+}
+.media-body h5{
+    font-size: 30px;
+    text-align: center;
+}
+.media-body{
+    font-size: 20px;
+}
+.col{
+    text-align: justify;
+}
+.mr-3, .mx-3 {
+    margin-right: auto !important;
+}
