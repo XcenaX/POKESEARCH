@@ -1,6 +1,5 @@
 from django.contrib import admin
+from .models import Pokemon, FightRoom
 
-from .models import New, User
-
-admin.site.register(New)
-admin.site.register(User)
+admin.site.register(Pokemon)
+admin.site.register(FightRoom)

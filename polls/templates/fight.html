@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+        <link rel="stylesheet" href="{% static 'polls/styles/main.css'%}">
+    <link rel="stylesheet" href="{% static 'polls/styles/bootstrap-datepicker.css'%}">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'polls/styles/new.css'%}">
+{% endblock %}
+
+{% block header_buttons %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:all_fights'%}">Бои</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="#">О нас</a>
+    </li>
+{% endblock %}
+
+
+{% block container %}
+    <div class="container" style="padding-top: 100px;">
+        <div class="row">
+                <div class="col col-lg-5" style="border: 1px solid;">
+                        <img class="d-flex mr-3" src="{{room.your_pokemon.img}}" alt="Generic placeholder image">
+                        <div class="media-body">
+                                <h5 class="mt-0 mb-1 font-weight-bold">{{room.your_pokemon.name}}</h5>                                                
+                                <p>Hp: {{room.your_pokemon.hp}}</p>
+                                <p>Attack: {{room.your_pokemon.attack}}</p>
+                                <p>Defence: {{room.your_pokemon.defence}}</p> 
+                        </div>
+                        
+                        
+                </div>
+
+                <div class="col col-lg-2" style="text-align: center; margin-top: 100px;">                    
+                    {%if room.game_ended%}
+                        <h3>Игра окончена!</h3>
+                        {%if room.you_win%}
+                            <h3>Вы победили!</h3>
+                        {%else%}
+                            <h3>Вы проиграли!</h3>                            
+                        {%endif%}
+                        <form action="{%url 'polls:send_fight'%}" method="POST" enctype="multipart/form-data">{%csrf_token%}
+                            <label for="email_button">Отправить бой на почту</label>
+                            <input type="text" placeholder="Введите ваш email" name="email" style="width: 100%;">
+                            <input type="text" hidden name="room" value="{{room.id}}">
+                            <button type="submit">Отправить</button>
+                        </form>
+                    {%else%}
+                        <form action="" method="POST">{%csrf_token%}
+                            <input type="number" name="user_input" placeholder="Введите число" style="width: 100%; margin-bottom: 20px;">
+                            <button type="submit">ATTACK</button>
+                        </form>
+                        <form method="get" action="{%url 'polls:quick_fight' room.uuid%}">
+                            <button type="submit">Быстрый бой</button>
+                        </form>
+                        {%if success_attack is None%}
+                            <div></div>
+                        {%else%}
+                            {%if success_attack is True%}                            
+                                <h3>Атака прошла успешно!</h3>
+                            {%else%}
+                                <h3>Вас атаковали!</h3>
+                            {%endif%}
+                        {%endif%}
+                    {%endif%}
+
+                    
+                </div>
+
+                <div class="col col-lg-5" style="border: 1px solid;">
+                    <img class="d-flex mr-3" src="{{room.enemy_pokemon.img}}" alt="Generic placeholder image">
+                    <div class="media-body">
+                            <h5 class="mt-0 mb-1 font-weight-bold">{{room.enemy_pokemon.name}}</h5>                                                
+                            <p>Hp: {{room.enemy_pokemon.hp}}</p>
+                            <p>Attack: {{room.enemy_pokemon.attack}}</p>
+                            <p>Defence: {{room.enemy_pokemon.defence}}</p> 
+                    </div>
+                    
+                    
+                    
+                </div>
+                <div>{{room.logs|linebreaks}}</div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

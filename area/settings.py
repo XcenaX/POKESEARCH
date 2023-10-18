@@ -32,12 +32,17 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
+    'api.apps.ApiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'drf_yasg',
+    'rest_framework',
+    "django_filters",    
+
 ]
 
 MIDDLEWARE = [
@@ -52,7 +57,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'area.urls'
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
+}
 
 TEMPLATES = [
     {
@@ -128,3 +135,12 @@ TIME_ZONE = 'UTC'
 
 STATIC_URL = '/static/'
 STATIC_ROOT = '/home/Snews/Snews/polls/static/'
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+# EMAIL_USE_SSL = False
+EMAIL_HOST_USER = "dj.app.info@gmail.com"
+EMAIL_HOST_PASSWORD = "chelnlxtegytxdrn"

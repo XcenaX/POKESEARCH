@@ -1,48 +1,53 @@
-from .models import New
-from django.shortcuts import render
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger        
 from datetime import datetime, timezone
-COUNT_BLOCKS_ON_PAGE = 10
-import pokebase as pb
+COUNT_BLOCKS_ON_PAGE = 20
+POKEMONS_COUNT = 1292
+LAST_PAGE = POKEMONS_COUNT // COUNT_BLOCKS_ON_PAGE
 import re
+from .game import game, get_pokemons_by_page, fetch_certain_pokemon, get_pages
 
-def item(request, title): 
+from .models import Pokemon, FightRoom
+from api.models import PokedexPokemon
+from django.core.mail import send_mail
+from area.settings import EMAIL_HOST_USER
+import random
 
-    current_new = New.objects.filter(url_name=title).first()
-    current_new.views += 1
-    print(current_new.pub_date)
-    current_new.save()
+def pokemon(request, id): 
+    pokemon = None
+    try:
+        pokemon = PokedexPokemon.objects.get(id=id)
+    except:
+        return redirect(reverse('polls:home'))
+    picked_id = 0
+    try:
+        picked_id = request.session["pokemon"]
+    except:
+        pass
+    is_picked = picked_id == id
 
     return render(request, 'page.html', {
-        "current_new": current_new,
+        "pokemon": pokemon,
+        'is_picked': is_picked,
+        'picked_id': picked_id
     })  
 
-def about(request):     
-    return render(request, 'about.html', {        
-    })  
+def pick_pokemon(request, id):     
+    request.session["pokemon"] = id
+    return redirect(request.META.get('HTTP_REFERER'))
     
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
-def main(request):      
-    pub_date = request.GET.get('pub_date')              
+def main(request):                 
     title = request.GET.get('title')
         
-    pokemons = pb.APIResourceList('pokemon')
-    q_pokemons = []
+    pokemons = PokedexPokemon.objects.all()
     
     if title:    
-        for pokemon in pokemons:
-            if re.search(title, pokemon["name"], re.IGNORECASE):
-                                
-                q_pokemons.append(pokemon)
-        pokemons = q_pokemons
-    else:
-        title = ""
-        for pokemon in pokemons:
-            q_pokemons.append(pokemon)
-        pokemons = q_pokemons
+        pokemons = pokemons.filter(name__icontains=title)
 
     paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)     
     page = request.GET.get('page')        
@@ -50,90 +55,164 @@ def main(request):
         page = int(page)
     except:
         page = 1
-    a = ""
-    snews = ""
-    pages=[]
-    if page:
-        try:
-            snews = paginator.page(page)
-        except EmptyPage:
-            snews = paginator.page(paginator.num_pages)
-            page = paginator.num_pages
-
-        for i in range(page-2, page+3):
-            try:
-                a = paginator.page(i)
-                pages.append(i)
-            except:
-                continue        
-        if pages[-1] != paginator.num_pages:
-            pages.append(paginator.num_pages)
-
-        if pages[0] != 1:
-            pages.insert(0, 1)
-    else:
-        pages = [1,2,3,4,5,paginator.num_pages]
-        snews = paginator.page(1)
     
+    pages = get_pages(paginator.page_range, page)
+    pokemons = get_pokemons_by_page(pokemons, page)
 
     return render(request, 'news.html', {
-        'snews': snews,
+        'snews': pokemons,
         "title": title,     
         "pages": pages,
     })  
 
-def popular(request):      
-    pub_date = request.GET.get('pub_date')              
-    title = request.GET.get('title')
+
+def quick_fight(request, room_id): 
+    room = None
+    try:
+        room = FightRoom.objects.get(uuid=room_id) 
+        print(room)
+        logs, winner = game(room)
+    except Exception as e:
+        print(e)
+        return redirect(reverse("polls:home"))
+    
+    return redirect(reverse('polls:fight', args=(room_id,)))
+
+
+def create_fight(request): 
+    if request.method == "GET":        
+        return redirect(request.META.get('HTTP_REFERER'))
+    elif request.method == "POST":
+        your_pokemon_id = int(request.POST["your_pokemon_id"])
+        enemy_pokemon_id = int(request.POST["enemy_pokemon_id"])
         
-    snews = New.objects.order_by("-views")  
-    if pub_date:
-        snews = snews.filter(pub_date__icontains=pub_date)
-    else:
-        pub_date = ""
-    if title:    
-        snews = snews.filter(title__icontains=title)
-    else:
-        title = ""
-    paginator = Paginator(snews, COUNT_BLOCKS_ON_PAGE)     
+        your_pokemon = fetch_certain_pokemon(your_pokemon_id)
+        enemy_pokemon = fetch_certain_pokemon(enemy_pokemon_id)
+
+        db_your_pokemon = Pokemon.objects.create(name=your_pokemon['name'],
+                                                height=your_pokemon['height'],
+                                                weight=your_pokemon['weight'],
+                                                hp=your_pokemon["hp"], 
+                                                attack=your_pokemon["attack"], 
+                                                defence=your_pokemon["defence"],
+                                                speed=your_pokemon["speed"],
+                                                img=your_pokemon["img"])
+        
+        db_enemy_pokemon = Pokemon.objects.create(name=enemy_pokemon['name'],
+                                                height=enemy_pokemon['height'],
+                                                weight=enemy_pokemon['weight'],
+                                                hp=enemy_pokemon["hp"], 
+                                                attack=enemy_pokemon["attack"], 
+                                                defence=enemy_pokemon["defence"],
+                                                speed=enemy_pokemon["speed"],
+                                                img=enemy_pokemon["img"])
+        db_your_pokemon.save()
+        db_enemy_pokemon.save()
+
+        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon)
+        room.save()
+
+        return HttpResponseRedirect(reverse('polls:fight', args=(room.uuid,)))
+
+
+def fight(request, room_id): 
+    room = None
+    try:
+        room = FightRoom.objects.get(uuid=room_id)
+    except:
+        return redirect(request.META.get('HTTP_REFERER'))
+    game_ended = room.game_ended
+
+    if request.method == "GET":        
+        return render(request, 'fight.html', {
+            "room": room,
+            "game_ended": game_ended,
+        })
+    elif request.method == "POST":
+        success_attack = False
+        if not game_ended:
+            user_input = int(request.POST["user_input"])
+            pc_choice = random.randint(1,10)            
+            if user_input%2==0 and pc_choice%2==0 or user_input%2==1 and pc_choice%2==1:
+                attack = round(room.your_pokemon.attack * (room.enemy_pokemon.defence/230))
+                room.enemy_pokemon.hp -= attack
+                room.enemy_pokemon.save()
+                success_attack = True
+            else:
+                attack = round(room.enemy_pokemon.attack * (room.your_pokemon.defence/230))
+                room.your_pokemon.hp -= attack
+                room.your_pokemon.save()
+            
+            
+            if room.your_pokemon.hp <= 0:
+                game_ended = True
+                room.game_ended = game_ended
+                room.ended_at = datetime.now()
+                room.save()          
+                send_mail(
+                    "Результат боя",
+                    "В жетсочайшем бою {}VS{}\nПобедил:{}".format(room.your_pokemon.name, room.enemy_pokemon.name, ),
+                    EMAIL_HOST_USER,
+                    ["vlad-057@mail.ru"],
+                    fail_silently=False,
+                )  
+            elif room.enemy_pokemon.hp <= 0:
+                game_ended = True
+                room.ended_at = datetime.now()
+                room.game_ended = game_ended
+                room.you_win = True
+                room.save()
+            
+        return render(request, 'fight.html', {
+            "room": room,
+            "game_ended": game_ended,
+            "success_attack": success_attack,
+        })
+    
+
+def send_fight(request):
+    if request.method == "POST":
+        room_id = request.POST.get('room', None)
+        room = None
+        email = request.POST.get("email", None)
+        
+        if room_id:
+            room = FightRoom.objects.get(id=room_id)
+        
+        # if not logs:            
+        #     winner = room.your_pokemon.name if room.you_win else room.enemy_pokemon.name            
+        #     message = "В жетсочайшем бою {0}VS{1}\nПобедитель:{2}".format(room.your_pokemon.name, room.enemy_pokemon.name, winner)
+
+        send_mail(
+            "Результат боя",
+            room.logs,
+            EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )
+        
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
+
+
+
+def all_fights(request): 
+    rooms = FightRoom.objects.all()
+
     page = request.GET.get('page')        
     try:
         page = int(page)
     except:
         page = 1
-    a = ""
-    snews = ""
-    pages=[]
-    if page:
-        try:
-            snews = paginator.page(page)
-        except EmptyPage:
-            snews = paginator.page(paginator.num_pages)
-            page = paginator.num_pages
 
+    if len(rooms) > 20:    
+        rooms = rooms[page*20 : page*20+20]
+
+    pages = []
+    if len(rooms) > 20:
         for i in range(page-2, page+3):
-            try:
-                a = paginator.page(i)
-                pages.append(i)
-            except:
-                continue        
-        if pages[-1] != paginator.num_pages:
-            pages.append(paginator.num_pages)
+            pages.append(i)
 
-        if pages[0] != 1:
-            pages.insert(0, 1)
-    else:
-        pages = [1,2,3,4,5,paginator.num_pages]
-        snews = paginator.page(1)
-    
-    popular = New.objects.order_by("-views")[:5]
-
-    return render(request, 'popular.html', {
-        'snews': snews,
-        'pub_date': pub_date,  
-        "title": title,     
-        "pages": pages,
-        "popular": popular,
-    })  
-      
-
+    return render(request, 'all_fights.html', {
+        "rooms": rooms,   
+        "pages": pages,     
+    })

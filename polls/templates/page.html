@@ -27,12 +27,29 @@
     <div class="container">
         <div class="row">
                 <div class="col col-lg-12">
-                        <img class="d-flex mr-3" src="{{current_new.img_url}}" alt="Generic placeholder image">
+                        <img class="d-flex mr-3" src="{{pokemon.img}}" alt="Generic placeholder image">
                         <div class="media-body">
-                                <h5 class="mt-0 mb-1 font-weight-bold">{{current_new.title}}</h5>
-                                <span>{{current_new.pub_date}}</span>
-                                <p>{{current_new.content}}</p>
+                                <h5 class="mt-0 mb-1 font-weight-bold">{{pokemon.name}}</h5>                                                
+                                <p>Hp: {{pokemon.hp}}</p>
+                                <p>Attack: {{pokemon.attack}}</p>
+                                <p>Defence: {{pokemon.defence}}</p> 
                         </div>
+                        <form method="post" action="{%url 'polls:pick_pokemon' pokemon.id%}">{%csrf_token%}
+                            {%if is_picked%}
+                                <button type="submit" disabled >Уже выбран</button>                                
+                            {%else%}
+                                <button type="submit" >Выбрать</button>
+                            {%endif%}
+                        </form>
+
+                        {%if not is_picked%}                        
+                        <form method="post" action="{%url 'polls:create_fight'%}">{%csrf_token%}
+                            <input type="text" value="{{picked_id}}" hidden name="your_pokemon_id">
+                            <input type="text" value="{{pokemon.id}}" hidden name="enemy_pokemon_id">
+                            <button type="submit">Обычный бой</button>
+                        </form>
+                        {%endif%}
+                        
                 </div>
             </div>
         </div>
