@@ -15,12 +15,20 @@ from django.core.mail import send_mail
 from area.settings import EMAIL_HOST_USER
 import random
 
+from api.serializers import PokemonSerializer
+
+from django.core.cache import cache
+
 def pokemon(request, id): 
-    pokemon = None
-    try:
-        pokemon = PokedexPokemon.objects.get(id=id)
-    except:
-        return redirect(reverse('polls:home'))
+    if not cache.get('pokemon{0}'.format(id), None):
+        try:        
+            pokemon = PokedexPokemon.objects.get(id=id)
+            cache.set('pokemon{0}'.format(id), pokemon, 3600)
+        except:
+            return redirect(reverse('polls:home'))        
+    else:
+        pokemon = cache.get('pokemon{0}'.format(id), None)
+
     picked_id = 0
     try:
         picked_id = request.session["pokemon"]
@@ -42,22 +50,36 @@ def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
 def main(request):                 
-    title = request.GET.get('title')
-        
-    pokemons = PokedexPokemon.objects.all()
-    
-    if title:    
-        pokemons = pokemons.filter(name__icontains=title)
-
-    paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)     
-    page = request.GET.get('page')        
+    title = request.GET.get('title', "")
+    page = request.GET.get('page')  
+    pokemons = []   
     try:
         page = int(page)
     except:
-        page = 1
-    
-    pages = get_pages(paginator.page_range, page)
-    pokemons = get_pokemons_by_page(pokemons, page)
+        page = 1   
+
+    if not cache.get("page{0}title{1}".format(page, title), None):
+        pokemons = PokedexPokemon.objects.all()
+        
+        if title:    
+            pokemons = pokemons.filter(name__icontains=title)
+
+        paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)     
+            
+        pages = get_pages(paginator.page_range, page)
+        pokemons = get_pokemons_by_page(pokemons, page)
+        
+        # cached_pokemons = []
+        # for pokemon in pokemons:
+        #     serializer = PokemonSerializer(pokemon)
+        #     cached_pokemons.append(serializer.data)
+        cache.set("page{0}title{1}".format(page, title), pokemons, 3600)
+    else:
+        pokemons = cache.get("page{0}title{1}".format(page, title))        
+        paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)
+        pages = get_pages(range(1300//COUNT_BLOCKS_ON_PAGE), page)
+
+
 
     return render(request, 'news.html', {
         'snews': pokemons,

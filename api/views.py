@@ -22,6 +22,11 @@ import datetime
 import random
 
 from polls.game import game
+from django_ftpserver.models import FTPUserAccount, FTPUserGroup
+from rest_framework.decorators import action
+import os
+from django.core.files.base import ContentFile
+from storages.backends.ftp import FTPStorage
 
 class PokedexPokemonViewSet(viewsets.ModelViewSet):
     #filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -307,3 +312,46 @@ class FastFight(APIView):
         response['room']['logs'] = logs
         
         return Response(response, status=200) 
+    
+
+class SendToFTP(APIView):
+    @swagger_auto_schema(
+        operation_description='Загрузить покемона на FTP сервер',             
+        responses={
+            "200": openapi.Response(        
+                description='',        
+                examples={
+                    "application/json": {
+                        'success': True,                                            
+                    },                    
+                }
+            ),
+            "401": openapi.Response(
+                description='',                
+                examples={
+                    "application/json": {
+                        "success": False,  
+                        'message': 'Error Message'                      
+                    },                    
+                }
+            ),            
+        })
+    def post(self, request, pokemon_id):               
+        try:
+            pokemon = PokedexPokemon.objects.get(id=pokemon_id)
+
+            file_name = pokemon.name + ".md"
+            markdown_content = f"# {pokemon.name}\n\n{pokemon.hp}\n\n{pokemon.attack}\n\n{pokemon.defence}\n\n{pokemon.weight}\n\n{pokemon.height}\n\n{pokemon.speed}\n\n{pokemon.img}"
+
+            today_date = datetime.date.today().strftime("%Y%m%d")
+            ftp_directory = os.path.join(today_date, pokemon.name)
+
+            from storages.backends.ftp import FTPStorage
+            ftp_storage = FTPStorage()
+            # os.path.join(ftp_directory, file_name)
+            ftp_storage.save(file_name, ContentFile(markdown_content.encode('utf-8')))
+
+            return Response({'success': True, 'message': 'Файл сохранен на FTP-сервере'})
+        except PokedexPokemon.DoesNotExist:
+            return Response({'message': 'Предмет не найден'}, status=404)
+        

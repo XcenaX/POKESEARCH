@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 
 class PokemonSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     hp = serializers.IntegerField()
     defence = serializers.IntegerField()
     attack = serializers.IntegerField()

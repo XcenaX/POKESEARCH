@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     "django_filters",    
-
+    'django_ftpserver',
+    'storages',
 ]
 
 MIDDLEWARE = [
@@ -120,6 +121,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # URL-адрес и порт Redis
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
@@ -127,8 +138,22 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
+#DEFAULT_FILE_STORAGE = 'storages.backends.ftp.FTPStorage'
+FTP_STORAGE_LOCATION = 'ftp://XcenaX:Dagad582@127.0.0.1:21/pokemons/'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
+FTP_AUTHENTICATION_CLASSES = (
+    'ftpserver.backends.FTPSettingsAuthentication',
+)
 
+FTP_USERS_MODEL = 'auth.User' 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
