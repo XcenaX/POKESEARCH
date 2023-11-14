@@ -75,9 +75,9 @@ def main(request):
         #     cached_pokemons.append(serializer.data)
         cache.set("page{0}title{1}".format(page, title), pokemons, 3600)
     else:
-        pokemons = cache.get("page{0}title{1}".format(page, title))        
+        pokemons = cache.get("page{0}title{1}".format(page, title))       
         paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)
-        pages = get_pages(range(1300//COUNT_BLOCKS_ON_PAGE), page)
+        pages = get_pages(range(len(pokemons)//COUNT_BLOCKS_ON_PAGE), page)
 
 
 

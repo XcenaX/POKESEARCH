@@ -15,7 +15,9 @@ class Pokemon(models.Model):
     defence = models.IntegerField(default=0)
     speed = models.IntegerField(default=0)
 
-
+    def __str__(self):
+        return self.name
+    
 class FightRoom(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     your_pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, related_name="your_pokemon")

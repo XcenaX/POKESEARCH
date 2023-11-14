@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -93,13 +95,15 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'Snews$default',
-#         'USER': 'Snews',
-#         'PASSWORD': 'Dagad582#',
-#         'HOST': 'Snews.mysql.pythonanywhere-services.com',
+#         'ENGINE': os.getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+#         'NAME': os.getenv("SQL_DATABASE", BASE_DIR + "db.sqlite3"),
+#         'USER': os.getenv("SQL_USER", "XcenaX"),
+#         'PASSWORD': os.getenv("SQL_PASSWORD", "Dagad582#"),
+#         'HOST': os.getenv("SQL_HOST", "localhost"),
+#         'PORT': os.getenv("SQL_PORT", "5432"),
 #     }
 # }
+
 
 
 # Password validation

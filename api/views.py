@@ -133,8 +133,9 @@ class CreateFight(APIView):
         })
     def post(self, request):    
         your_pokemon_id = request.POST.get('pokemon_id')   
-        enemy_pokemon_id = random.randint(1, PokedexPokemon.objects.count)
-        enemy_pokemon = PokedexPokemon.objects.get(enemy_pokemon_id) 
+        enemy_pokemon_id = str(random.randint(1, PokedexPokemon.objects.count()))
+
+        enemy_pokemon = PokedexPokemon.objects.get(id=enemy_pokemon_id) 
         pokemon = None
         try:
             pokemon = PokedexPokemon.objects.get(id=your_pokemon_id)  
@@ -241,7 +242,8 @@ class Fight(APIView):
                 'uuid': room.uuid,
                 'your_pokemon': {},
                 'enemy_pokemon': {},
-                'success_attack': True
+                'success_attack': True,
+                'game_ended': False,
             }
         }
 
@@ -263,11 +265,13 @@ class Fight(APIView):
             if room.your_pokemon.hp <= 0:
                 game_ended = True
                 room.game_ended = game_ended
-                room.ended_at = datetime.now()                                        
+                response["game_ended"] = True
+                room.ended_at = datetime.datetime.now()                                        
             elif room.enemy_pokemon.hp <= 0:
                 game_ended = True
-                room.ended_at = datetime.now()
+                room.ended_at = datetime.datetime.now()
                 room.game_ended = game_ended
+                response["game_ended"] = True
                 room.you_win = True                
         else:
             return Response({"success": False, "error": "Битва уже окончена, нельзя кидать кубик"})

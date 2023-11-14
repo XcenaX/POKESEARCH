@@ -9,6 +9,10 @@ body{
     display: flex;
 }
 
+ul a {
+    flex: 33%;
+}
+
 header{
     background-color: #bb5544;
     box-shadow: 0 5px 5px -5px #333;
