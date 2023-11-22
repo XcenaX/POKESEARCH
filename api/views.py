@@ -357,5 +357,5 @@ class SendToFTP(APIView):
 
             return Response({'success': True, 'message': 'Файл сохранен на FTP-сервере'})
         except PokedexPokemon.DoesNotExist:
-            return Response({'message': 'Предмет не найден'}, status=404)
+            return Response({'success': False, 'message': 'Предмет не найден'}, status=404)
         

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "django_filters",    
     'django_ftpserver',
     'storages',
+    'django_cypress',
 ]
 
 MIDDLEWARE = [

@@ -150,6 +150,21 @@ class PokemonFightTest(TestCase):
 
         
         self.assertTrue(game_ended)
+    
+    def send_ftp(self):
+        url = reverse('polls:send_to_ftp')
+        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id})
+        
+        data = json.loads(response.content)        
+        self.assertEqual(data['success'], True) 
+    
+    def send_email(self):
+        url = reverse('polls:send_fight')
+        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id})
+        
+        data = json.loads(response.content)        
+        self.assertEqual(data['success'], True)
+        
 
 class PokemonFilterTest(TestCase):
     def setUp(self):
@@ -162,6 +177,35 @@ class PokemonFilterTest(TestCase):
         response = self.client.get(url)
         
         # Парсим html и смотрим сколько покемонов вернулось
+        soup = BeautifulSoup(response.content, 'html.parser')
+        ul = soup.find('ul', class_='list-unstyled')
+        count = len(ul.find_all('a')) if ul else 0
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(count, 1)
+
+
+class GetFightsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        # Создаем двух покемонов для тестирования
+        self.pokemon1 = Pokemon.objects.create(name="bulbasaur")
+        self.pokemon2 = Pokemon.objects.create(name="charmander")
+
+        # Создаем экземпляр FightRoom для тестирования
+        self.fight_room = FightRoom.objects.create(
+            your_pokemon=self.pokemon1,
+            enemy_pokemon=self.pokemon2,
+            game_ended=False,
+            you_win=False,
+            rounds=3
+        )
+
+    # TODO
+    def test_get_all_fights(self):
+        url = reverse('polls:all_fights')
+        response = self.client.get(url)
+        
         soup = BeautifulSoup(response.content, 'html.parser')
         ul = soup.find('ul', class_='list-unstyled')
         count = len(ul.find_all('a')) if ul else 0
