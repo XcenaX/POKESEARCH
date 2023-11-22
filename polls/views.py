@@ -170,14 +170,7 @@ def fight(request, room_id):
                 game_ended = True
                 room.game_ended = game_ended
                 room.ended_at = datetime.now()
-                room.save()          
-                send_mail(
-                    "Результат боя",
-                    "В жетсочайшем бою {}VS{}\nПобедил:{}".format(room.your_pokemon.name, room.enemy_pokemon.name, ),
-                    EMAIL_HOST_USER,
-                    ["vlad-057@mail.ru"],
-                    fail_silently=False,
-                )  
+                room.save()                            
             elif room.enemy_pokemon.hp <= 0:
                 game_ended = True
                 room.ended_at = datetime.now()
