@@ -15,11 +15,14 @@ from django.core.mail import send_mail
 from area.settings import EMAIL_HOST_USER
 import random
 
+from users.modules.functions import get_current_user
+
 from api.serializers import PokemonSerializer
 
 from django.core.cache import cache
 
 def pokemon(request, id): 
+    current_user = get_current_user(request)
     if not cache.get('pokemon{0}'.format(id), None):
         try:        
             pokemon = PokedexPokemon.objects.get(id=id)
@@ -37,6 +40,7 @@ def pokemon(request, id):
     is_picked = picked_id == id
 
     return render(request, 'page.html', {
+        'current_user': current_user,
         "pokemon": pokemon,
         'is_picked': is_picked,
         'picked_id': picked_id
@@ -49,7 +53,8 @@ def pick_pokemon(request, id):
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
-def main(request):                 
+def main(request):             
+    current_user = get_current_user(request)
     title = request.GET.get('title', "")
     page = request.GET.get('page')  
     pokemons = []   
@@ -82,6 +87,7 @@ def main(request):
 
 
     return render(request, 'news.html', {
+        "current_user": current_user,
         'snews': pokemons,
         "title": title,     
         "pages": pages,
@@ -105,6 +111,7 @@ def create_fight(request):
     if request.method == "GET":        
         return redirect(request.META.get('HTTP_REFERER'))
     elif request.method == "POST":
+        current_user = get_current_user(request)
         your_pokemon_id = int(request.POST["your_pokemon_id"])
         enemy_pokemon_id = int(request.POST["enemy_pokemon_id"])
         
@@ -131,13 +138,14 @@ def create_fight(request):
         db_your_pokemon.save()
         db_enemy_pokemon.save()
 
-        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon)
+        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon, user=current_user)
         room.save()
 
         return HttpResponseRedirect(reverse('polls:fight', args=(room.uuid,)))
 
 
 def fight(request, room_id): 
+    current_user = get_current_user(request)
     room = None
     try:
         room = FightRoom.objects.get(uuid=room_id)
@@ -179,6 +187,7 @@ def fight(request, room_id):
                 room.save()
             
         return render(request, 'fight.html', {
+            "current_user": current_user,
             "room": room,
             "game_ended": game_ended,
             "success_attack": success_attack,
@@ -211,6 +220,7 @@ def send_fight(request):
 
 
 def all_fights(request): 
+    current_user = get_current_user(request)
     rooms = FightRoom.objects.all()
 
     page = request.GET.get('page')        
@@ -228,6 +238,7 @@ def all_fights(request):
             pages.append(i)
 
     return render(request, 'all_fights.html', {
+        "current_user": current_user,
         "rooms": rooms,   
         "pages": pages,     
     })

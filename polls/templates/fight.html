@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="{% static 'polls/styles/new.css'%}">
 {% endblock %}
 
+{% block input_block %}
+    <input type="text" name="title" class="form-control search" placeholder="Введите название" value="{{q}}">
+{% endblock %}
+
 {% block header_buttons %}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>

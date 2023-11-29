@@ -28,7 +28,7 @@
                                 {% block header_buttons %}
                                 {% endblock %}
                             </ul>
-                            <div>
+                            <div style="display: flex;justify-content: space-between; align-items: center;">
                                 <form class="form-inline my-2 my-lg-0 ml-auto " type="GET" action="{% url 'polls:home'%}" >
                                     {% block input_block %}
                                     {% endblock %}
@@ -36,7 +36,16 @@
                                         <button class="btn btn-search" type="submit">Найти</button>
                                     </div>
                                 </form>
-                                
+                                {%if current_user%}
+                                    <div class="user-mail" style="margin: 0 15px;">{{current_user.username}}</div>
+                                    <form action="{%url 'polls:logout'%}" method="POST" class="logout-form">
+                                        {%csrf_token%}
+                                        <button type="submit">Выйти</button>    
+                                    </form>
+                                {%else%}
+                                    <a style="margin: 0 25px;" href="{%url 'polls:login'%}">Вход</a>
+                                    <a href="{%url 'polls:register'%}">Регистрация</a>
+                                {%endif%}
                             </div>
                             
                         </div>

@@ -1,11 +1,14 @@
-from django.urls import path
-from .views import login_view, register, logout_view
-from django.contrib.auth import views as auth_views
-from users.forms import CustomAuthForm
+from django.urls import path, include
+from .views import CheckCode, LogoutView, LoginView, RegisterView, PasswordResetConfirmView, PasswordRequested, RequestPasswordResetView, ConfirmEmail
 
 urlpatterns = [
-    path('register/', register, name='register'),
-    path('login/', login_view, name='login'),
-    # path('login/', auth_views.LoginView.as_view(authentication_form=CustomAuthForm), name='login'),
-    path('logout/', logout_view, name='logout'),
+    path('register/', RegisterView.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
+    path('logout/', LogoutView.as_view(), name='logout'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('password-requested/', PasswordRequested.as_view(), name='password_requested'),
+    path('request-password-reset/', RequestPasswordResetView.as_view(), name='request_password_reset'),
+    path('confirm-email/', ConfirmEmail.as_view(), name='confirm_email'),
+    path('check-code/', CheckCode.as_view(), name='check_code'),
+
 ]

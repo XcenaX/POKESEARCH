@@ -171,7 +171,7 @@ FTP_USERS_MODEL = 'auth.User'
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/Snews/Snews/polls/static/'
+STATIC_ROOT = '/home/Snews/Snews/static/'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -181,3 +181,11 @@ EMAIL_PORT = 587
 # EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "dj.app.info@gmail.com"
 EMAIL_HOST_PASSWORD = "chelnlxtegytxdrn"
+
+CODE_LENGTH = int(os.getenv("CODE_LENGTH", "5"))
+BASE_URL = os.getenv("BASE_URL", "127.0.0.1:8000")
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = ''
+SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
