@@ -10,6 +10,8 @@ from rest_framework import status
 from bs4 import BeautifulSoup
 import json
 
+host = "127.0.0.1:8000"
+
 class PokemonModelTest(TestCase):
 
     def setUp(self):
@@ -212,3 +214,51 @@ class GetFightsTest(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(count, 1)
+
+
+
+
+class APITest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+
+    def test_filter_pokemon(self):
+        url = host + '/pokemons/?title=que'
+        response = self.client.get(url)
+        
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(data), 3)
+    
+    def test_get_pokemon(self):
+        url = host + '/pokemons/1/'
+        response = self.client.get(url)
+        
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['hp'], 45)
+        self.assertEqual(data['defence'], 49)
+        self.assertEqual(data['attack'], 49)
+        self.assertEqual(data['name'], 'bulbasaur')
+        self.assertEqual(data['speed'], 45)
+    
+    def test_send_ftp(self):
+        url = host + '/send-to-ftp/1/'
+        response = self.client.post(url)
+        
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data['success'], True)
+
+    def test_fight(self):
+        url = host + '/create-fight/'
+        response = self.client.post(url)
+        
+        data = json.loads(response.content)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data['success'], True)
