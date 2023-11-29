@@ -68,6 +68,12 @@
                                         {%else%}
                                             <div class="date">Статус: Бой продолжается</div>                                        
                                         {%endif%}
+                                        {%if item.user%}
+                                            <div class="date">Игрок: {{item.user}}</div>
+                                        {%else%}
+                                            <div class="date">Игрок: Анонимный</div>
+                                        {%endif%}
+
 
                                 </div>
                             </li>

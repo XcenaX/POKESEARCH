@@ -2,6 +2,7 @@ from django.db import models
 from datetime import date
 import datetime
 import uuid
+from users.models import MyUser
 
 class Pokemon(models.Model):
     name = models.TextField(default="")
@@ -15,7 +16,9 @@ class Pokemon(models.Model):
     defence = models.IntegerField(default=0)
     speed = models.IntegerField(default=0)
 
-
+    def __str__(self):
+        return self.name
+    
 class FightRoom(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     your_pokemon = models.ForeignKey(Pokemon, on_delete=models.CASCADE, related_name="your_pokemon")
@@ -26,6 +29,7 @@ class FightRoom(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     ended_at = models.DateTimeField(blank=True, null=True)
     logs = models.TextField(default='')
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return "{} VS {}".format(self.your_pokemon.name, self.enemy_pokemon.name)

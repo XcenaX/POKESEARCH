@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,11 +29,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
+AUTH_USER_MODEL = 'users.MyUser'
 # Application definition
 
 INSTALLED_APPS = [
     'polls.apps.PollsConfig',
+    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,7 +45,9 @@ INSTALLED_APPS = [
     'drf_yasg',
     'rest_framework',
     "django_filters",    
-
+    'django_ftpserver',
+    'storages',
+    'django_cypress',
 ]
 
 MIDDLEWARE = [
@@ -92,13 +97,15 @@ DATABASES = {
 
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'Snews$default',
-#         'USER': 'Snews',
-#         'PASSWORD': 'Dagad582#',
-#         'HOST': 'Snews.mysql.pythonanywhere-services.com',
+#         'ENGINE': os.getenv("SQL_ENGINE", "django.db.backends.sqlite3"),
+#         'NAME': os.getenv("SQL_DATABASE", BASE_DIR + "db.sqlite3"),
+#         'USER': os.getenv("SQL_USER", "XcenaX"),
+#         'PASSWORD': os.getenv("SQL_PASSWORD", "Dagad582#"),
+#         'HOST': os.getenv("SQL_HOST", "localhost"),
+#         'PORT': os.getenv("SQL_PORT", "5432"),
 #     }
 # }
+
 
 
 # Password validation
@@ -118,7 +125,23 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+]
 
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # URL-адрес и порт Redis
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -127,14 +150,28 @@ LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
 
+#DEFAULT_FILE_STORAGE = 'storages.backends.ftp.FTPStorage'
+FTP_STORAGE_LOCATION = 'ftp://XcenaX:Dagad582@127.0.0.1:21/pokemons/'
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 
+FTP_AUTHENTICATION_CLASSES = (
+    'ftpserver.backends.FTPSettingsAuthentication',
+)
 
+FTP_USERS_MODEL = 'auth.User' 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = '/home/Snews/Snews/polls/static/'
+STATIC_ROOT = '/home/Snews/Snews/static/'
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -144,3 +181,11 @@ EMAIL_PORT = 587
 # EMAIL_USE_SSL = False
 EMAIL_HOST_USER = "dj.app.info@gmail.com"
 EMAIL_HOST_PASSWORD = "chelnlxtegytxdrn"
+
+CODE_LENGTH = int(os.getenv("CODE_LENGTH", "5"))
+BASE_URL = os.getenv("BASE_URL", "127.0.0.1:8000")
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+SOCIAL_AUTH_VK_OAUTH2_KEY = ''
+SOCIAL_AUTH_VK_OAUTH2_SECRET = ''

@@ -15,7 +15,7 @@ from django.utils import timezone
 from polls.game import fetch_certain_pokemon
 
 try:
-    i = 1011
+    i = 680
     while(True):
         pokemon = fetch_certain_pokemon(i)
         new_pokemon = PokedexPokemon.objects.create(
@@ -29,7 +29,7 @@ try:
             img=pokemon['img'],
         )
         new_pokemon.save()
-        print(new_pokemon.name)
+        print(new_pokemon.name, i)
         i+=1
         if i == 1018:
             i = 10001

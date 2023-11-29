@@ -15,12 +15,23 @@ from django.core.mail import send_mail
 from area.settings import EMAIL_HOST_USER
 import random
 
+from users.modules.functions import get_current_user
+
+from api.serializers import PokemonSerializer
+
+from django.core.cache import cache
+
 def pokemon(request, id): 
-    pokemon = None
-    try:
-        pokemon = PokedexPokemon.objects.get(id=id)
-    except:
-        return redirect(reverse('polls:home'))
+    current_user = get_current_user(request)
+    if not cache.get('pokemon{0}'.format(id), None):
+        try:        
+            pokemon = PokedexPokemon.objects.get(id=id)
+            cache.set('pokemon{0}'.format(id), pokemon, 3600)
+        except:
+            return redirect(reverse('polls:home'))        
+    else:
+        pokemon = cache.get('pokemon{0}'.format(id), None)
+
     picked_id = 0
     try:
         picked_id = request.session["pokemon"]
@@ -29,6 +40,7 @@ def pokemon(request, id):
     is_picked = picked_id == id
 
     return render(request, 'page.html', {
+        'current_user': current_user,
         "pokemon": pokemon,
         'is_picked': is_picked,
         'picked_id': picked_id
@@ -41,25 +53,41 @@ def pick_pokemon(request, id):
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=timezone.utc).astimezone(tz=None)
 
-def main(request):                 
-    title = request.GET.get('title')
-        
-    pokemons = PokedexPokemon.objects.all()
-    
-    if title:    
-        pokemons = pokemons.filter(name__icontains=title)
-
-    paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)     
-    page = request.GET.get('page')        
+def main(request):             
+    current_user = get_current_user(request)
+    title = request.GET.get('title', "")
+    page = request.GET.get('page')  
+    pokemons = []   
     try:
         page = int(page)
     except:
-        page = 1
-    
-    pages = get_pages(paginator.page_range, page)
-    pokemons = get_pokemons_by_page(pokemons, page)
+        page = 1   
+
+    if not cache.get("page{0}title{1}".format(page, title), None):
+        pokemons = PokedexPokemon.objects.all()
+        
+        if title:    
+            pokemons = pokemons.filter(name__icontains=title)
+
+        paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)     
+            
+        pages = get_pages(paginator.page_range, page)
+        pokemons = get_pokemons_by_page(pokemons, page)
+        
+        # cached_pokemons = []
+        # for pokemon in pokemons:
+        #     serializer = PokemonSerializer(pokemon)
+        #     cached_pokemons.append(serializer.data)
+        cache.set("page{0}title{1}".format(page, title), pokemons, 3600)
+    else:
+        pokemons = cache.get("page{0}title{1}".format(page, title))       
+        paginator = Paginator(pokemons, COUNT_BLOCKS_ON_PAGE)
+        pages = get_pages(range(len(pokemons)//COUNT_BLOCKS_ON_PAGE), page)
+
+
 
     return render(request, 'news.html', {
+        "current_user": current_user,
         'snews': pokemons,
         "title": title,     
         "pages": pages,
@@ -83,6 +111,7 @@ def create_fight(request):
     if request.method == "GET":        
         return redirect(request.META.get('HTTP_REFERER'))
     elif request.method == "POST":
+        current_user = get_current_user(request)
         your_pokemon_id = int(request.POST["your_pokemon_id"])
         enemy_pokemon_id = int(request.POST["enemy_pokemon_id"])
         
@@ -109,13 +138,14 @@ def create_fight(request):
         db_your_pokemon.save()
         db_enemy_pokemon.save()
 
-        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon)
+        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon, user=current_user)
         room.save()
 
         return HttpResponseRedirect(reverse('polls:fight', args=(room.uuid,)))
 
 
 def fight(request, room_id): 
+    current_user = get_current_user(request)
     room = None
     try:
         room = FightRoom.objects.get(uuid=room_id)
@@ -148,14 +178,7 @@ def fight(request, room_id):
                 game_ended = True
                 room.game_ended = game_ended
                 room.ended_at = datetime.now()
-                room.save()          
-                send_mail(
-                    "Результат боя",
-                    "В жетсочайшем бою {}VS{}\nПобедил:{}".format(room.your_pokemon.name, room.enemy_pokemon.name, ),
-                    EMAIL_HOST_USER,
-                    ["vlad-057@mail.ru"],
-                    fail_silently=False,
-                )  
+                room.save()                            
             elif room.enemy_pokemon.hp <= 0:
                 game_ended = True
                 room.ended_at = datetime.now()
@@ -164,6 +187,7 @@ def fight(request, room_id):
                 room.save()
             
         return render(request, 'fight.html', {
+            "current_user": current_user,
             "room": room,
             "game_ended": game_ended,
             "success_attack": success_attack,
@@ -196,6 +220,7 @@ def send_fight(request):
 
 
 def all_fights(request): 
+    current_user = get_current_user(request)
     rooms = FightRoom.objects.all()
 
     page = request.GET.get('page')        
@@ -213,6 +238,7 @@ def all_fights(request):
             pages.append(i)
 
     return render(request, 'all_fights.html', {
+        "current_user": current_user,
         "rooms": rooms,   
         "pages": pages,     
     })

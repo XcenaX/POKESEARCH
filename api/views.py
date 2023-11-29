@@ -22,6 +22,11 @@ import datetime
 import random
 
 from polls.game import game
+from django_ftpserver.models import FTPUserAccount, FTPUserGroup
+from rest_framework.decorators import action
+import os
+from django.core.files.base import ContentFile
+from storages.backends.ftp import FTPStorage
 
 class PokedexPokemonViewSet(viewsets.ModelViewSet):
     #filter_backends = (SearchFilter, DjangoFilterBackend)
@@ -128,8 +133,9 @@ class CreateFight(APIView):
         })
     def post(self, request):    
         your_pokemon_id = request.POST.get('pokemon_id')   
-        enemy_pokemon_id = random.randint(1, PokedexPokemon.objects.count)
-        enemy_pokemon = PokedexPokemon.objects.get(enemy_pokemon_id) 
+        enemy_pokemon_id = str(random.randint(1, PokedexPokemon.objects.count()))
+
+        enemy_pokemon = PokedexPokemon.objects.get(id=enemy_pokemon_id) 
         pokemon = None
         try:
             pokemon = PokedexPokemon.objects.get(id=your_pokemon_id)  
@@ -236,7 +242,8 @@ class Fight(APIView):
                 'uuid': room.uuid,
                 'your_pokemon': {},
                 'enemy_pokemon': {},
-                'success_attack': True
+                'success_attack': True,
+                'game_ended': False,
             }
         }
 
@@ -258,11 +265,13 @@ class Fight(APIView):
             if room.your_pokemon.hp <= 0:
                 game_ended = True
                 room.game_ended = game_ended
-                room.ended_at = datetime.now()                                        
+                response["game_ended"] = True
+                room.ended_at = datetime.datetime.now()                                        
             elif room.enemy_pokemon.hp <= 0:
                 game_ended = True
-                room.ended_at = datetime.now()
+                room.ended_at = datetime.datetime.now()
                 room.game_ended = game_ended
+                response["game_ended"] = True
                 room.you_win = True                
         else:
             return Response({"success": False, "error": "Битва уже окончена, нельзя кидать кубик"})
@@ -307,3 +316,46 @@ class FastFight(APIView):
         response['room']['logs'] = logs
         
         return Response(response, status=200) 
+    
+
+class SendToFTP(APIView):
+    @swagger_auto_schema(
+        operation_description='Загрузить покемона на FTP сервер',             
+        responses={
+            "200": openapi.Response(        
+                description='',        
+                examples={
+                    "application/json": {
+                        'success': True,                                            
+                    },                    
+                }
+            ),
+            "401": openapi.Response(
+                description='',                
+                examples={
+                    "application/json": {
+                        "success": False,  
+                        'message': 'Error Message'                      
+                    },                    
+                }
+            ),            
+        })
+    def post(self, request, pokemon_id):               
+        try:
+            pokemon = PokedexPokemon.objects.get(id=pokemon_id)
+
+            file_name = pokemon.name + ".md"
+            markdown_content = f"# {pokemon.name}\n\n{pokemon.hp}\n\n{pokemon.attack}\n\n{pokemon.defence}\n\n{pokemon.weight}\n\n{pokemon.height}\n\n{pokemon.speed}\n\n{pokemon.img}"
+
+            today_date = datetime.date.today().strftime("%Y%m%d")
+            ftp_directory = os.path.join(today_date, pokemon.name)
+
+            from storages.backends.ftp import FTPStorage
+            ftp_storage = FTPStorage()
+            # os.path.join(ftp_directory, file_name)
+            ftp_storage.save(file_name, ContentFile(markdown_content.encode('utf-8')))
+
+            return Response({'success': True, 'message': 'Файл сохранен на FTP-сервере'})
+        except PokedexPokemon.DoesNotExist:
+            return Response({'success': False, 'message': 'Предмет не найден'}, status=404)
+        

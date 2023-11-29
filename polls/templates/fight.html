@@ -10,6 +10,10 @@
     <link rel="stylesheet" href="{% static 'polls/styles/new.css'%}">
 {% endblock %}
 
+{% block input_block %}
+    <input type="text" name="title" class="form-control search" placeholder="Введите название" value="{{q}}">
+{% endblock %}
+
 {% block header_buttons %}
     <li class="nav-item">
         <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>
@@ -40,7 +44,7 @@
 
                 <div class="col col-lg-2" style="text-align: center; margin-top: 100px;">                    
                     {%if room.game_ended%}
-                        <h3>Игра окончена!</h3>
+                        <h3 class="attack-message">Игра окончена!</h3>
                         {%if room.you_win%}
                             <h3>Вы победили!</h3>
                         {%else%}
@@ -48,14 +52,14 @@
                         {%endif%}
                         <form action="{%url 'polls:send_fight'%}" method="POST" enctype="multipart/form-data">{%csrf_token%}
                             <label for="email_button">Отправить бой на почту</label>
-                            <input type="text" placeholder="Введите ваш email" name="email" style="width: 100%;">
+                            <input type="text" placeholder="Введите ваш email" name="email" class="email-input" style="width: 100%;">
                             <input type="text" hidden name="room" value="{{room.id}}">
-                            <button type="submit">Отправить</button>
+                            <button type="submit" class="send-email-button">Отправить</button>
                         </form>
                     {%else%}
                         <form action="" method="POST">{%csrf_token%}
-                            <input type="number" name="user_input" placeholder="Введите число" style="width: 100%; margin-bottom: 20px;">
-                            <button type="submit">ATTACK</button>
+                            <input type="number" name="user_input" placeholder="Введите число" class="attack-input" style="width: 100%; margin-bottom: 20px;">
+                            <button type="submit" class="attack-button">ATTACK</button>
                         </form>
                         <form method="get" action="{%url 'polls:quick_fight' room.uuid%}">
                             <button type="submit">Быстрый бой</button>
@@ -64,9 +68,9 @@
                             <div></div>
                         {%else%}
                             {%if success_attack is True%}                            
-                                <h3>Атака прошла успешно!</h3>
+                                <h3 class="attack-message">Атака прошла успешно!</h3>
                             {%else%}
-                                <h3>Вас атаковали!</h3>
+                                <h3 class="attack-message">Вас атаковали!</h3>
                             {%endif%}
                         {%endif%}
                     {%endif%}
