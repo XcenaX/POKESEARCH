@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     "django_filters",    
     'django_ftpserver',
     'storages',
-    'django_cypress',
 ]
 
 MIDDLEWARE = [
@@ -136,7 +135,7 @@ PASSWORD_HASHERS = [
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',  # URL-адрес и порт Redis
+        'LOCATION': 'redis://redis:6379/1',  # URL-адрес и порт Redis
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }

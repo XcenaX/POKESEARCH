@@ -3,8 +3,8 @@ services:
   web:
     image: pokemons
     build:
-      context: "G:/Homework/POKESEARCH"
-    command: python manage.py runserver
+      context: "G:/Homework4/POKESEARCH"
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
     ports:
@@ -21,6 +21,10 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=Dagad582
       - POSTGRES_DB=main
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
 
 volumes:
   postgres_data:
