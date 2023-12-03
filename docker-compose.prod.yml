@@ -3,7 +3,7 @@ services:
   web:
     image: pokemons
     build:
-      context: "G:/Homework/POKESEARCH"
+      context: "~/data"
     command: gunicorn area.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - .:/app  # Монтируйте текущую директорию в контейнер
