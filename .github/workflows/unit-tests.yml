@@ -21,5 +21,4 @@ jobs:
 
     - name: Run tests
       run: |
-        # Здесь должна быть команда для запуска ваших тестов, например:
-        python -m unittest discover -s tests
+        python manage.py test api
