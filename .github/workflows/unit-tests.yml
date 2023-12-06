@@ -9,25 +9,13 @@ on:
       - main
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
-    services:
-      docker:
-        image: docker:19.03.12
-        options: --privileged
-        ports:
-          - 2375:2375
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-
     steps:
-    - name: Check out the repo
-      uses: actions/checkout@v2
-
+    - uses: actions/checkout@v2
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
-
     - name: Cache Docker layers
       uses: actions/cache@v2
       with:
@@ -35,15 +23,12 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
-
     - name: Docker Compose up
       run: |
-        docker-compose -f docker-compose.yml up -d
-
+        BUILD_CONTEXT=. docker-compose -f docker-compose.yml up -d
     - name: Run tests
       run: |
         docker-compose -f docker-compose.yml exec web python manage.py test
-
     - name: Docker Compose down
       run: |
         docker-compose -f docker-compose.yml down
