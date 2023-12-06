@@ -110,3 +110,8 @@ body {
   color: red;
   margin-bottom: 15px;
 }
+
+form a{
+  text-decoration: none;
+  color: inherit;
+}

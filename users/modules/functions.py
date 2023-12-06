@@ -27,7 +27,10 @@ def session_parameter(request, name):
         return None
 
 def get_current_user(request):
-    if not request.session.get("user", None):
+    try:
+        return MyUser.objects.get(id=int(request.session["user"]))
+    except: 
+        if request.user.is_authenticated:
+            return request.user
         return None
-    user = MyUser.objects.get(id=int(request.session["user"]))
-    return user
+        

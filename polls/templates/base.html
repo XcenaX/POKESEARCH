@@ -36,7 +36,13 @@
                                         <button class="btn btn-search" type="submit">Найти</button>
                                     </div>
                                 </form>
-                                {%if current_user%}
+                                {%if request.user.is_authenticated%}
+                                    <div class="user-mail" style="margin: 0 15px;">{{request.user}}</div>
+                                    <form action="{%url 'polls:logout'%}" method="POST" class="logout-form">
+                                        {%csrf_token%}
+                                        <button type="submit">Выйти</button>    
+                                    </form>
+                                {%elif current_user%}
                                     <div class="user-mail" style="margin: 0 15px;">{{current_user.username}}</div>
                                     <form action="{%url 'polls:logout'%}" method="POST" class="logout-form">
                                         {%csrf_token%}

@@ -38,7 +38,7 @@ class VerificationPhone(models.Model):
         user = self.get_user()
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        link = f"{BASE_URL}/reset_password/{uid}/{token}/"
+        link = f"{BASE_URL}/reset/{uid}/{token}/"
         return link
 
     def get_user(self):
