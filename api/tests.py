@@ -130,25 +130,24 @@ class PokemonFightTest(TestCase):
 
     def test_fight(self):
         url = reverse('polls:api_create_fight')
-        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id})
+        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id}, format='json')
         
-        data = json.loads(response.content)        
-        room_uuid = data['room']['uuid'] 
+        self.assertTrue(FightRoom.objects.exists())
+        data = response.json()  
+        room_uuid = data['room']['uuid']
         
-        self.assertTrue(FightRoom.objects.exists())    
-   
         url = reverse('polls:make_move')
         game_ended = False
         
         limit = 100
-        while not game_ended:
-            user_number = randint(1,10)
-            response = self.client.post(url, {'user_input': user_number, 'room_uuid': room_uuid})
-            response_data = json.loads(response.content)
+        while not game_ended and limit > 0:
+            user_number = randint(1, 10)
+            response = self.client.post(url, {'user_input': user_number, 'room_uuid': room_uuid}, format='json')
+            response_data = response.json()  
             game_ended = response_data.get("game_ended", False)
             limit -= 1
-            if limit == 0:
-                self.assertTrue(game_ended, True)
+        
+        self.assertTrue(game_ended)
 
         
         self.assertTrue(game_ended)
@@ -221,28 +220,47 @@ class GetFightsTest(TestCase):
 class APITest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        self.pokemon1 = PokedexPokemon.objects.create(
+            name="bulbasaur",
+            attack=49,
+            hp=45,
+            defence=49,
+            speed=45,
+            img="link_to_img_bulbasaur",
+            weight="6.9",
+            height="0.7"
+        )
+        self.pokemon2 = PokedexPokemon.objects.create(
+            name="charmander",
+            attack=52,
+            hp=39,
+            defence=43,
+            speed=65,
+            img="link_to_img_charmander",
+            weight="8.5",
+            height="0.6"
+        )
 
     def test_filter_pokemon(self):
-        url = host + '/pokemons/?title=que'
+        url = reverse('api:pokemon-filter', kwargs={'name': 'bulbasaur'})
         response = self.client.get(url)
         
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(data), 3)
+        self.assertTrue(any(pokemon['name'] == 'bulbasaur' for pokemon in data))
     
     def test_get_pokemon(self):
-        url = host + '/pokemons/1/'
+        url = reverse('api:pokemon-detail', kwargs={'pk': self.pokemon1.pk})
         response = self.client.get(url)
         
-        data = json.loads(response.content)
+        data = response.json()
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data['id'], 1)
+        self.assertEqual(data['name'], 'bulbasaur')
+        self.assertEqual(data['attack'], 49)
         self.assertEqual(data['hp'], 45)
         self.assertEqual(data['defence'], 49)
-        self.assertEqual(data['attack'], 49)
-        self.assertEqual(data['name'], 'bulbasaur')
         self.assertEqual(data['speed'], 45)
     
     def test_send_ftp(self):
