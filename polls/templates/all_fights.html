@@ -17,7 +17,7 @@
         <a class="nav-link" href="#">Бои</a>
     </li>
     <li class="nav-item">
-        <a class="nav-link" href="#">О нас</a>
+        <a class="nav-link" href="{%url 'polls:dashboard'%}">Статистика</a>
     </li>    
 {% endblock %}
 
@@ -50,7 +50,7 @@
 
                 <ul class="list-unstyled" style="display: flex; flex-wrap: wrap;">
                     {% for item in rooms%}
-                        <a href="{% url 'polls:fight' item.uuid%}" style="width: 50%;">
+                        <a href="{% url 'polls:fight' item.uuid%}" style="max-width: 50%;">
                             <li class="media my-4" style="flex-wrap: wrap; text-align: center; justify-content: center;">
                                 <img class="d-flex" src="{{item.your_pokemon.img}}" alt="your_pokemon">
                                 <img class="d-flex" src="{{item.enemy_pokemon.img}}" alt="enemy_pokemon">                            
@@ -68,11 +68,8 @@
                                         {%else%}
                                             <div class="date">Статус: Бой продолжается</div>                                        
                                         {%endif%}
-                                        {%if item.user%}
-                                            <div class="date">Игрок: {{item.user}}</div>
-                                        {%else%}
-                                            <div class="date">Игрок: Анонимный</div>
-                                        {%endif%}
+                                        <div class="date">Игрок: {{item.user}}</div>
+                                        
 
 
                                 </div>

@@ -138,7 +138,11 @@ def create_fight(request):
         db_your_pokemon.save()
         db_enemy_pokemon.save()
 
-        room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon, user=current_user)
+        username = current_user if not current_user.username else current_user.username
+        if not username:
+            room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon)
+        else:
+            room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon, user=username)
         room.save()
 
         return HttpResponseRedirect(reverse('polls:fight', args=(room.uuid,)))
@@ -161,6 +165,7 @@ def fight(request, room_id):
     elif request.method == "POST":
         success_attack = False
         if not game_ended:
+            room.rounds += 1
             user_input = int(request.POST["user_input"])
             pc_choice = random.randint(1,10)            
             if user_input%2==0 and pc_choice%2==0 or user_input%2==1 and pc_choice%2==1:
@@ -241,4 +246,11 @@ def all_fights(request):
         "current_user": current_user,
         "rooms": rooms,   
         "pages": pages,     
+    })
+
+def dashboard(request): 
+    current_user = get_current_user(request)
+    
+    return render(request, 'dashboard.html', {
+        "current_user": current_user    
     })

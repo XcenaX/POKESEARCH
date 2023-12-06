@@ -15,6 +15,9 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.forms import SetPasswordForm
 from django.db.models import Q
+from django.contrib import messages
+from django.contrib.auth import logout
+from django.utils.html import strip_tags
 
 class LoginView(View):
     template_name = "login.html"
@@ -109,7 +112,7 @@ class ConfirmEmail(View):
             })
         
         if not email or not password:
-            return redirect("users:register")
+            return redirect("polls:register")
 
         verification_phone = VerificationPhone.objects.filter(email=email, code=code).first()
         if not verification_phone:
@@ -127,13 +130,16 @@ class ConfirmEmail(View):
         del request.session["register_username"]
         verification_phone.delete()
 
-        return redirect(reverse("users:login"))
+        return redirect(reverse("polls:login"))
 
 class LogoutView(View):    
     def get(self, request, *args, **kwargs):                            
         return JsonResponse({"error": "GET method not allowed!"})
     def post(self, request, *args, **kwargs):
-        del request.session["user"]
+        try:
+            del request.session["user"]
+        except:
+            logout(request)
         return redirect(reverse("polls:login"))
     
 
@@ -156,13 +162,15 @@ class RequestPasswordResetView(View):
             message = render_to_string('restore_password_email.html', {
                 'link': verification_phone.generate_link(),                            
             })
+            plain_message = strip_tags(message)
             send_mail(
                 "Восстановление пароля",
-                message,
+                plain_message,
                 EMAIL_HOST,
-                [email]
+                [email],
+                html_message=message
             )
-            return redirect(reverse("main:password_requested"))              
+            return redirect(reverse("polls:password_requested"))              
         else:
             return render(request, self.template_name, {
                 "error": "Неверный email!"
@@ -194,19 +202,15 @@ class PasswordResetConfirmView(View):
             uid = urlsafe_base64_decode(uidb64).decode()
             user = MyUser.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, MyUser.DoesNotExist):
-            user = None
+            user = None        
+       
+        print("User:", user)
         
-        try:
-            verification_phone = VerificationPhone.objects.get(email=user.email)
-        except:
-            verification_phone = None
-        
-        if user is not None and default_token_generator.check_token(user, token) and verification_phone:
+        if user is not None and default_token_generator.check_token(user, token):
             form = SetPasswordForm(user, request.POST)
             if form.is_valid():
-                form.save()
-                verification_phone.delete()
-                return redirect(reverse("main:login"))  
+                form.save()              
+                return redirect(reverse("polls:login"))  
             else:
                 context = {'form': form, 'uidb64': uidb64, 'token': token}
                 return render(request, self.template_name, context)
@@ -247,3 +251,8 @@ class CheckCode(View):
         verification_phone.delete()
 
         return redirect(reverse("polls:home"))
+    
+
+def signup_redirect(request):
+    messages.error(request, "Что-то пошло не так! Похоже у вас уже есть аккаунт с этим email!")
+    return redirect("homepage")

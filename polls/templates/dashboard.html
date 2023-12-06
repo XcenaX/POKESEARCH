@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block styles %}
+    <link rel="stylesheet" href="{% static 'polls/styles/main.css'%}">
+    <link rel="stylesheet" href="{% static 'polls/styles/bootstrap-datepicker.css'%}">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    
+    <style>
+        body{
+            background-color: #181b1f;
+        }
+    </style>
+{% endblock %}
+
+{% block input_block %}
+    <input type="text" name="title" class="form-control search" placeholder="Введите название" value="{{q}}">
+{% endblock %}
+
+{% block header_buttons %}
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'polls:home'%}">Главная</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{%url 'polls:all_fights'%}">Бои</a>
+    </li>
+    <li class="nav-item active">
+        <a class="nav-link" href="#">Статистика</a>
+    </li>    
+{% endblock %}
+
+    
+{% block container %}
+<div class="container">
+    <div class="row">
+            
+            <div class="col col-lg-12">
+                <iframe src="http://127.0.0.1:3001/d-solo/d478fbf0-01f0-44c4-9a76-4b030cde4943/pokemons-fights-statistics?orgId=1&from=1701830823172&to=1701852423172&panelId=2&allow_embedding=true" width="100%" height="400" frameborder="0"></iframe>
+            </div>
+            <div class="col col-lg-12">
+                <iframe src="http://127.0.0.1:3001/d-solo/d478fbf0-01f0-44c4-9a76-4b030cde4943/pokemons-fights-statistics?orgId=1&from=1701831087983&to=1701852687983&panelId=1&allow_embedding=true" width="100%" height="400" frameborder="0"></iframe>                   
+            </div>
+            <div class="col col-lg-12">
+                <iframe src="http://127.0.0.1:3001/d-solo/d478fbf0-01f0-44c4-9a76-4b030cde4943/pokemons-fights-statistics?orgId=1&from=1701831100510&to=1701852700510&panelId=3&allow_embedding=true" width="100%" height="400" frameborder="0"></iframe>                   
+            </div>
+            <div class="col col-lg-12">
+                <iframe src="http://127.0.0.1:3001/d-solo/d478fbf0-01f0-44c4-9a76-4b030cde4943/pokemons-fights-statistics?orgId=1&from=1701831111614&to=1701852711614&panelId=4&allow_embedding=true" width="100%" height="400" frameborder="0"></iframe>                   
+            </div>
+        
+           
+        </div>
+    </div>
+</div>
+{% endblock %}

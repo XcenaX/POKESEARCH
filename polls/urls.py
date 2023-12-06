@@ -40,6 +40,7 @@ urlpatterns = [
    path('fight/<slug:room_id>/', views.fight, name='fight'),    
    path('create-fight/', views.create_fight, name='create_fight'),    
    path('all-fights/', views.all_fights, name='all_fights'),    
-   path('send-fight/', views.send_fight, name='send_fight'),    
-
+   path('send-fight/', views.send_fight, name='send_fight'),   
+   
+   path('dashboard/', views.dashboard, name='dashboard'),   
 ]

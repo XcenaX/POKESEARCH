@@ -1,4 +1,5 @@
 {% load static %}
+{% load socialaccount %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -22,6 +23,12 @@
           <input type="password" placeholder="Пароль" name="password" minlength="5" maxlength="50" required/>          
           <button>Продолжить</button>
           <input type="hidden" name="next" value="{{ next }}" />
+          <button class="btn btn-outline-info" style="margin-top: 20px;">
+              <a href="{% provider_login_url 'google'%}?next=/">
+                  <i class="fab fa-google"></i>
+                  войти через Google
+              </a>
+          </button>
           <p class="message">Есть аккаунт? <a href="{%url 'polls:login'%}">Войти</a></p>
           <p class="message"><a href="{%url 'polls:home'%}">Главная</a></p>
 

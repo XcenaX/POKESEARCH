@@ -28,8 +28,8 @@ class FightRoom(models.Model):
     rounds = models.IntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     ended_at = models.DateTimeField(blank=True, null=True)
-    logs = models.TextField(default='')
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, blank=True, null=True)
+    logs = models.TextField(default='', blank=True, null=True)
+    user = models.TextField(blank=True, null=True, default="Анонимный польователь")
 
     def __str__(self):
         return "{} VS {}".format(self.your_pokemon.name, self.enemy_pokemon.name)
