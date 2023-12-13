@@ -28,7 +28,7 @@ jobs:
         BUILD_CONTEXT=. docker-compose -f docker-compose.yml up -d
     - name: Run tests
       run: |
-        docker-compose -f docker-compose.yml exec web python manage.py test
+        docker-compose -f docker-compose.yml exec -T web python manage.py test --verbosity=2        
     - name: Docker Compose down
       run: |
         docker-compose -f docker-compose.yml down
