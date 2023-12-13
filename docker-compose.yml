@@ -3,7 +3,7 @@ services:
   web:
     image: pokemons
     build:
-      context: ${BUILD_CONTEXT:-G:/Homework4/POKESEARCH_LOCAL}
+      context: ${BUILD_CONTEXT}
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
