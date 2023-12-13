@@ -229,7 +229,10 @@ class Fight(APIView):
             ),            
         })
     def post(self, request):    
-        user_input = int(request.POST["user_input"])
+        try:
+            user_input = int(request.POST["user_input"])
+        except:
+            user_input = 1
         room_uuid = request.POST.get('room_uuid')   
         room = None
         try:
