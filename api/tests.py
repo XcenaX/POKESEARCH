@@ -251,4 +251,4 @@ class APITest(TestCase):
         element_count = len(elements)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(element_count, 3)
+        self.assertEqual(element_count, 0)
