@@ -25,7 +25,9 @@ jobs:
           ${{ runner.os }}-buildx-
     - name: Docker Compose up
       run: |
-        BUILD_CONTEXT=. docker-compose -f docker-compose.yml up -d
+        docker-compose -f docker-compose.yml up -d
+      env:
+        BUILD_CONTEXT: ${{ secrets.BUILD_CONTEXT }}
     - name: Run tests
       run: |
         docker-compose -f docker-compose.yml exec -T web python manage.py test --verbosity=2       
