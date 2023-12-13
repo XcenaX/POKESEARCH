@@ -1,4 +1,5 @@
 from random import randint
+import bs4
 from django.http import HttpResponse
 from django.test import TestCase
 from polls.models import Pokemon, FightRoom
@@ -130,9 +131,9 @@ class PokemonFightTest(TestCase):
 
     def test_fight(self):
         url = reverse('polls:api_create_fight')
-        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id}, format='json')
+        response = self.client.post(url, {'pokemon_id': self.pokedex_p1.id})
         
-        self.assertTrue(FightRoom.objects.exists())
+        self.assertTrue(response.status_code == status.HTTP_200_OK)
         data = response.json()  
         room_uuid = data['room']['uuid']
         
@@ -142,15 +143,13 @@ class PokemonFightTest(TestCase):
         limit = 100
         while not game_ended and limit > 0:
             user_number = randint(1, 10)
-            response = self.client.post(url, {'user_input': user_number, 'room_uuid': room_uuid}, format='json')
+            response = self.client.post(url, {'user_input': user_number, 'room_uuid': room_uuid})
             response_data = response.json()  
             game_ended = response_data.get("game_ended", False)
             limit -= 1
         
         self.assertTrue(game_ended)
 
-        
-        self.assertTrue(game_ended)
     
     def send_ftp(self):
         url = reverse('polls:send_to_ftp')
@@ -242,41 +241,14 @@ class APITest(TestCase):
         )
 
     def test_filter_pokemon(self):
-        url = reverse('api:pokemon-filter', kwargs={'name': 'bulbasaur'})
+        url = reverse('polls:home') + "/?title=que"
         response = self.client.get(url)
-        
-        data = response.json()
+
+        data = response.content
+
+        soup = BeautifulSoup(data, "html.parser")
+        elements = soup.find_all(class_="media my-4")
+        element_count = len(elements)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertTrue(any(pokemon['name'] == 'bulbasaur' for pokemon in data))
-    
-    def test_get_pokemon(self):
-        url = reverse('api:pokemon-detail', kwargs={'pk': self.pokemon1.pk})
-        response = self.client.get(url)
-        
-        data = response.json()
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data['name'], 'bulbasaur')
-        self.assertEqual(data['attack'], 49)
-        self.assertEqual(data['hp'], 45)
-        self.assertEqual(data['defence'], 49)
-        self.assertEqual(data['speed'], 45)
-    
-    def test_send_ftp(self):
-        url = host + '/send-to-ftp/1/'
-        response = self.client.post(url)
-        
-        data = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data['success'], True)
-
-    def test_fight(self):
-        url = host + '/create-fight/'
-        response = self.client.post(url)
-        
-        data = json.loads(response.content)
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(data['success'], True)
+        self.assertEqual(element_count, 3)

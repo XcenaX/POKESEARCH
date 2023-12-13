@@ -138,7 +138,7 @@ def create_fight(request):
         db_your_pokemon.save()
         db_enemy_pokemon.save()
 
-        username = current_user if not current_user.username else current_user.username
+        username = current_user if not current_user else current_user.username
         if not username:
             room = FightRoom.objects.create(your_pokemon=db_your_pokemon, enemy_pokemon=db_enemy_pokemon)
         else:
